@@ -12,15 +12,13 @@ import com.example.sumeet.sunshine.data.WeatherDbHelper;
 /**
  * Created by sumeet on 6/27/16.
  */
-public class TestDb extends AndroidTestCase{
+public class TestProvider extends AndroidTestCase{
 
 
-    public static final String LOG_TAG = TestDb.class.getSimpleName();
-    public void testCreateDb() throws Throwable {
+    public static final String LOG_TAG = TestProvider.class.getSimpleName();
+    public void testDeleteDb() throws Throwable {
         mContext.deleteDatabase(WeatherDbHelper.DataBase_Name);
-        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
-        assertEquals(true, db.isOpen());
-        db.close();
+
     }
     public void testInsertReadDb()
     {
@@ -74,8 +72,14 @@ public class TestDb extends AndroidTestCase{
         else{
             fail("NO VALUES REtURNED ");
         }
-
-
-
     }
+    public void testGetType(){
+        String type = mContext.getContentResolver().getType(WeatherContract.WeatherEntry.CONTENT_URI);
+        assertEquals(WeatherContract.WeatherEntry.CONTENT_TYPE,type);
+        String testLocation = "94074";
+        type = mContext.getContentResolver().getType(WeatherContract.WeatherEntry.buildWeatherLocation(testLocation));
+        assertEquals(WeatherContract.WeatherEntry.CONTENT_TYPE,type);
+    }
+
+
 }

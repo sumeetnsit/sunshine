@@ -3,7 +3,6 @@ package com.example.sumeet.sunshine.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.view.View;
 
 /**
  * Created by sumeet on 6/27/16.
@@ -17,11 +16,11 @@ public class WeatherDbHelper extends SQLiteOpenHelper{
 
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE" + WeatherContract.LocationEntry.TABLE_NAME
                 + "(" + WeatherContract.LocationEntry._ID + "INTEGER PRIMARY KEY" +
-                WeatherContract.LocationEntry.LOCATION_SETTING + "TEXT NOT NULL"+
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + "TEXT NOT NULL"+
                 WeatherContract.LocationEntry.COLUMN_CITY_NAME + "TEXT NOT NULL" +
                 WeatherContract.LocationEntry.COLUMN_COORD_LAT+ "REAL NOT NULL" +
                 WeatherContract.LocationEntry.COLUMN_COORD_LONG+ "REAL NOT NULL" +
-                "UNIQUE ( " + WeatherContract.LocationEntry.LOCATION_SETTING + ") ON CONFLICT IGNORE );";
+                "UNIQUE ( " + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + ") ON CONFLICT IGNORE );";
 
         final String SQL_CREATE_WEATHER_TABLE = "CREATE TABLE" + WeatherContract.WeatherEntry.TABLE_NAME
                 + "(" + WeatherContract.WeatherEntry._ID + "INTEGER PRIMARY KEY AUTOINCREMENT" +
