@@ -38,7 +38,8 @@
                 android:value="com.example.sumeet.sunshine.MainActivity" />
         </activity>
         <provider
-            android:authorities="com.example.sumeet.sunshine.app"
+            android:authorities="com.example.android.sunshine.app"
+            android:enabled="true"
             android:name=".data.WeatherProvider"/>
 
         

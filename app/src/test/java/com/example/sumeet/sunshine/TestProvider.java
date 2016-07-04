@@ -20,7 +20,7 @@ public class TestProvider extends AndroidTestCase{
         mContext.deleteDatabase(WeatherDbHelper.DataBase_Name);
 
     }
-    public void testInsertReadDb()
+    public void testInsertReadProvider()
     {
         String testName = "NorthPole";
         String testLocationSetting = "99705";

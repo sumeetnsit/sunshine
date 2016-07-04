@@ -4,6 +4,10 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by sumeet on 6/27/16.
  */
@@ -15,13 +19,13 @@ public class WeatherContract {
     public static final String PATH_LOCATION = "location";
 
 
-    public static final class WeatherEntry implements BaseColumns{
+    public static final class WeatherEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_WEATHER).build();
         public static final String CONTENT_TYPE =
-            "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/";
+                "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/";
         public static final String CONTENT_ITEM_TYPE =
-            "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/";
+                "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/";
 
 
         public static final String TABLE_NAME = "weather";
@@ -37,32 +41,36 @@ public class WeatherContract {
         public static final String COLUMN_DEGREES = "degrees";
 
         public static Uri buildWeatherUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI,id);
+            return ContentUris.withAppendedId(CONTENT_URI, id);
         }
-        public static Uri buildWeatherLocation(String locationSetting){
+
+        public static Uri buildWeatherLocation(String locationSetting) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
         }
-        public static Uri buildWeatherLocationWithStartDate(String locationSetting, String startDate){
-            return CONTENT_URI.buildUpon().appendPath(locationSetting).appendQueryParameter(COLUMN_DATETEXT,startDate).build();
+
+        public static Uri buildWeatherLocationWithStartDate(String locationSetting, String startDate) {
+            return CONTENT_URI.buildUpon().appendPath(locationSetting).appendQueryParameter(COLUMN_DATETEXT, startDate).build();
         }
-        public static Uri buildWeatherLocationWithDate(String locationSetting, String date){
+
+        public static Uri buildWeatherLocationWithDate(String locationSetting, String date) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).appendPath(date).build();
         }
-        public static String getLocationSettingFromUri(Uri uri){
+
+        public static String getLocationSettingFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
 
-        public static String getDateFromUri(Uri uri){
+        public static String getDateFromUri(Uri uri) {
             return uri.getPathSegments().get(2);
         }
 
-        public static String getStartDateFromUri(Uri uri){
+        public static String getStartDateFromUri(Uri uri) {
             return uri.getQueryParameter(COLUMN_DATETEXT);
         }
 
     }
 
-    public static final class LocationEntry implements BaseColumns{
+    public static final class LocationEntry implements BaseColumns {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
 
         public static final String CONTENT_TYPE =
@@ -77,12 +85,30 @@ public class WeatherContract {
         public static final String COLUMN_COORD_LONG = "coord_long";
 
         public static Uri buildLocationUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI,id);
+            return ContentUris.withAppendedId(CONTENT_URI, id);
         }
-        public static Uri buildWeatherLocation(String locationSetting){
+
+        public static Uri buildWeatherLocation(String locationSetting) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
         }
 
+    }
+
+    public static final String DATE_FORMAT = "yyyyMMdd";
+
+    public static String getDbDateString(Date date) {
+        // Because the API returns a unix timestamp (measured in seconds),
+        // it must be converted to milliseconds in order to be converted to valid date.
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        return sdf.format(date);
+    }
+    public static Date getDateFromDb(String dateText) {
+        SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATE_FORMAT);
+        try {
+            return dbDateFormat.parse(dateText);
+        } catch (ParseException e) {
+            return null;
+        }
     }
 }
 
