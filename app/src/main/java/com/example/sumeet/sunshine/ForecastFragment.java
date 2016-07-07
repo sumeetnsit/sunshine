@@ -4,11 +4,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.os.Bundle;
-import java.io.InputStreamReader;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -22,31 +20,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.sumeet.sunshine.data.WeatherContract;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.net.URL;
-import java.security.PrivateKey;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Arrays;
-import java.net.HttpURLConnection;
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.StringTokenizer;
 
-import static android.widget.Toast.LENGTH_LONG;
 import static com.example.sumeet.sunshine.R.string.pref_location_key;
 
 /**
@@ -60,7 +41,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public static final int FORECAST_LOADER = 0;
 
     private  static final String[] FORECAST_COLUMNS = {
-
             WeatherContract.WeatherEntry.TABLE_NAME+"."+WeatherContract.WeatherEntry._ID,
             WeatherContract.WeatherEntry.COLUMN_DATETEXT,
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
@@ -96,13 +76,21 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onStart(){
         super.onStart();
-        updateWeather();
 
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
         inflater.inflate(R.menu.forecastfragment,menu);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(mLocation != null && !Utility.getPreferredLocation(getActivity()).equals(mLocation)){
+            getLoaderManager().restartLoader(FORECAST_LOADER,null,this);
+        }
+
     }
 
     @Override
@@ -174,9 +162,20 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                Intent detailed_activity = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT,mForecastAdapter.getItem(i));
-  //              startActivity(detailed_activity);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                SimpleCursorAdapter adapter =(SimpleCursorAdapter)adapterView.getAdapter();
+                Cursor cursor = adapter.getCursor();
+                if(null != cursor && cursor.moveToPosition(position)){
+                    boolean isMetric = Utility.isMetric(getActivity());
+                        String forecast = String.format("%s - %s - &s/%s",
+                        Utility.formatDate(cursor.getString(COL_WEATHER_DATE)),
+                        cursor.getString(COL_WEATHER_DESC),
+                        Utility.formatTemperature(getActivity(),cursor.getDouble(COL_WEATHER_MAX_TEMP),isMetric),
+                        Utility.formatTemperature(getActivity(),cursor.getDouble(COL_WEATHER_MIN_TEMP),isMetric));
+                    Intent detailed_activity = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT,forecast);
+                    startActivity(detailed_activity);
+                }
+
 
             }
         });
@@ -186,7 +185,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     /* The date/time conversion code is going to be moved outside the asynctask later,
 
         * so for convenience we're breaking it out into its own method now.
-        */
+        *
     private String getReadableDateString(long time){
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
@@ -195,9 +194,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         return format_date.format(date).toString();
     }
 
-    /**
+    **
      * Prepare the weather high/lows for presentation.
-     */
+     *
     private String formatHighLows(double high, double low) {
         // For presentation, assume the user doesn't care about tenths of a degree.
 
@@ -220,7 +219,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
 
-    /**
+    **
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
      *

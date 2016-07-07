@@ -21,6 +21,11 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
+import com.example.sumeet.sunshine.data.WeatherContract;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.util.List;
 
 /**
@@ -36,6 +41,14 @@ import java.util.List;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+
+    static boolean mBindingPreference;
+    private GoogleApiClient client;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -45,6 +58,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -53,6 +67,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
+            if (!mBindingPreference) {
+                Context context = SunshineApp.APPLICATION_CONTEXT;
+                if (preference.getKey().equals(context.getString(R.string.pref_location_key))) {
+                    FetchWeatherTask weatherTask = new FetchWeatherTask(context);
+                    String location = value.toString();
+                    weatherTask.execute(location);
+                }else{
+                    context.getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI,null);
+                }
+            }
 
             if (preference instanceof ListPreference) {
                 // For list preferences, look up the correct display value in
@@ -109,6 +133,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     /**
@@ -159,6 +186,46 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName);
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Settings Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.example.sumeet.sunshine/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Settings Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.example.sumeet.sunshine/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
     }
 
     /**
