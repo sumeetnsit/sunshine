@@ -12,7 +12,7 @@ public final class SunshineApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        APPLICATION_CONTEXT = getApplicationContext();
+        APPLICATION_CONTEXT = this;
     }
 
 

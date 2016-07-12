@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -28,6 +29,7 @@ import com.example.sumeet.sunshine.data.WeatherContract;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.example.sumeet.sunshine.DetailActivityFragment.DATE_KEY;
 import static com.example.sumeet.sunshine.R.string.pref_location_key;
 
 /**
@@ -39,6 +41,21 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String LOG_TAG = "MyActivity";
     private String mLocation;
     public static final int FORECAST_LOADER = 0;
+    private ListView mListView;
+    private int mPosition = ListView.INVALID_POSITION;
+    private static final String SELECTED_KEY = "selected_position";
+    private boolean mUseTodayLayout;
+
+
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Uri dateUri);
+    }
+
+    public ForecastFragment() {
+    }
 
     private  static final String[] FORECAST_COLUMNS = {
             WeatherContract.WeatherEntry.TABLE_NAME+"."+WeatherContract.WeatherEntry._ID,
@@ -46,7 +63,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
     };
 
     public static final int COL_WEATHER_ID = 0;
@@ -55,10 +73,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public static final int COL_WEATHER_MAX_TEMP = 3;
     public static final int COL_WEATHER_MIN_TEMP = 4;
     public static final int COL_LOCATION_SETTING = 5;
+    public static final int COL_WEATHER_CONDITION_ID = 6;
+    public static final int COL_COORD_LAT = 7;
+    public static final int COL_COORD_LONG = 8;
 
-    public ForecastFragment() {
-    }
-    private SimpleCursorAdapter mForecastAdapter;
+
+    private ForecastAdapter mForecastAdapter;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -114,118 +134,31 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
 
 
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView =  inflater.inflate(R.layout.fragment_main, container, false);
-        mForecastAdapter = new SimpleCursorAdapter(
-                getActivity(),
-                R.layout.list_item_forecast,
-                null,
-                new String[]{
-                        WeatherContract.WeatherEntry.COLUMN_DATETEXT,
-                        WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-                        WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-                        WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
-                },
-                new int[]{
-                        R.id.list_item_date_textview,
-                        R.id.list_item_forecast_textview,
-                        R.id.list_item_high_textview,
-                        R.id.list_item_low_textview
-                },
-                0
-                );
-                mForecastAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-                    @Override
-                    public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                        switch(columnIndex){
-                            case COL_WEATHER_MAX_TEMP:
-                            case COL_WEATHER_MIN_TEMP:{
-                                boolean isMetric = Utility.isMetric(getActivity());
-                                ((TextView)view).setText(Utility.formatTemperature(getActivity(),cursor.getDouble(columnIndex),isMetric));
-                                return true;
-                            }
-                            case COL_WEATHER_DATE:{
-                                String dateString = cursor.getString(columnIndex);
-                                TextView dateView = (TextView) view;
-                                dateView.setText(Utility.formatDate(dateString));
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                });
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ListView listView = (ListView)rootView.findViewById(R.id.listview_forecast);
+        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                SimpleCursorAdapter adapter =(SimpleCursorAdapter)adapterView.getAdapter();
-                Cursor cursor = adapter.getCursor();
-                if(null != cursor && cursor.moveToPosition(position)){
-                    boolean isMetric = Utility.isMetric(getActivity());
-                        String forecast = String.format("%s - %s - &s/%s",
-                        Utility.formatDate(cursor.getString(COL_WEATHER_DATE)),
-                        cursor.getString(COL_WEATHER_DESC),
-                        Utility.formatTemperature(getActivity(),cursor.getDouble(COL_WEATHER_MAX_TEMP),isMetric),
-                        Utility.formatTemperature(getActivity(),cursor.getDouble(COL_WEATHER_MIN_TEMP),isMetric));
-                    Intent detailed_activity = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT,forecast);
-                    startActivity(detailed_activity);
+                Cursor cursor = mForecastAdapter.getCursor();
+                if (cursor != null && cursor.moveToPosition(position)) {
+                    Intent intent = new Intent(getActivity(), DetailActivity.class)
+                            .putExtra(DetailActivityFragment.DATE_KEY, cursor.getString(COL_WEATHER_DATE));
+                    startActivity(intent);
                 }
-
-
             }
         });
+
         return rootView;
     }
 
-    /* The date/time conversion code is going to be moved outside the asynctask later,
-
-        * so for convenience we're breaking it out into its own method now.
-        *
-    private String getReadableDateString(long time){
-        // Because the API returns a unix timestamp (measured in seconds),
-        // it must be converted to milliseconds in order to be converted to valid date.
-        Date date = new Date(time * 1000);
-        SimpleDateFormat format_date = new SimpleDateFormat("E, MMM d");
-        return format_date.format(date).toString();
-    }
-
-    **
-     * Prepare the weather high/lows for presentation.
-     *
-    private String formatHighLows(double high, double low) {
-        // For presentation, assume the user doesn't care about tenths of a degree.
-
-        SharedPreferences Sharedprefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String unitType = Sharedprefs.getString(
-                getString(R.string.pref_units_key),
-                getString(R.string.pref_units_metric));
-        if(unitType.equals(getString(R.string.pref_units_imperial))){
-            high = (high * 1.8) + 32;
-            low = (low * 1.8) + 32;
-        }else if(!unitType.equals(getString(R.string.pref_units_metric))) {
-            Log.v(LOG_TAG, "unit type not fouund" + unitType);
-        }
-
-        long roundedHigh = Math.round(high);
-        long roundedLow = Math.round(low);
-
-        String highLowStr = roundedHigh + "/" + roundedLow;
-        return highLowStr;
-    }
-
-
-    **
-     * Take the String representing the complete forecast in JSON Format and
-     * pull out the data we need to construct the Strings needed for the wireframes.
-     *
-     * Fortunately parsing is easy:  constructor takes the JSON string and converts it
-     * into an Object hierarchy for us.
-     */
 
 
     @Override
@@ -257,6 +190,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
     }
+
+
 }
 
 
