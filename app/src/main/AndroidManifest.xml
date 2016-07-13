@@ -38,6 +38,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.sumeet.sunshine.MainActivity" />
         </activity>
+        <service android:name="com.example.sumeet.sunshine.service.SunshineService"></service>
         <provider
             android:authorities="com.example.android.sunshine.app"
             android:enabled="true"

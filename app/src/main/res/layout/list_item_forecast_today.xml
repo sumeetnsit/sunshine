@@ -5,8 +5,8 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:orientation="horizontal">
-    <!--android:background="@drawable/ic">-->
+    android:orientation="horizontal"
+    android:background="@color/colorPrimary">
 
     <LinearLayout
         android:layout_height="wrap_content"
@@ -23,21 +23,21 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="#123" />
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/list_item_high_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="72sp"
+            android:textSize="65sp"
             android:fontFamily="sans-serif-light"
-            android:textColor="#123" />
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/list_item_low_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#123"
+            android:textColor="@color/white"
             android:textSize="36sp"
             android:layout_marginLeft="8dp"/>
     </LinearLayout>
@@ -63,6 +63,6 @@
             android:fontFamily="sans-serif-condensed"
             android:layout_gravity="center_horizontal"
             android:textAppearance="?android:textAppearanceLarge"
-            android:textColor="#123"/>
+            android:textColor="@color/white"/>
     </LinearLayout>
 </LinearLayout>
