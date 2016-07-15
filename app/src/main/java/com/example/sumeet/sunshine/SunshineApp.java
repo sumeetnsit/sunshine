@@ -15,5 +15,8 @@ public final class SunshineApp extends Application {
         APPLICATION_CONTEXT = this;
     }
 
-
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+    }
 }

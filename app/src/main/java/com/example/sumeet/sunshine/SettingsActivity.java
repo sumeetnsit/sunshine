@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
 import com.example.sumeet.sunshine.data.WeatherContract;
+import com.example.sumeet.sunshine.service.sync.SunshineSyncAdapter;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -70,9 +71,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             if (!mBindingPreference) {
                 Context context = SunshineApp.APPLICATION_CONTEXT;
                 if (preference.getKey().equals(context.getString(R.string.pref_location_key))) {
-                    FetchWeatherTask weatherTask = new FetchWeatherTask(context);
-                    String location = value.toString();
-                    weatherTask.execute(location);
+                    SunshineSyncAdapter.syncImmediately(SunshineApp.APPLICATION_CONTEXT);
                 }else{
                     context.getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI,null);
                 }

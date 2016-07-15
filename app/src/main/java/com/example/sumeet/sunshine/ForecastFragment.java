@@ -1,5 +1,9 @@
 package com.example.sumeet.sunshine;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -25,6 +29,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.sumeet.sunshine.data.WeatherContract;
+import com.example.sumeet.sunshine.service.SunshineService;
+import com.example.sumeet.sunshine.service.sync.SunshineSyncAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,7 +45,7 @@ import static com.example.sumeet.sunshine.R.string.pref_location_key;
 
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = "MyActivity";
-    private String mLocation;
+    private String mLocation ;
     public static final int FORECAST_LOADER = 0;
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
@@ -117,19 +123,15 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
         if(id == R.id.action_refresh) {
-            FetchWeatherTask fetchWeatherTask = new FetchWeatherTask(getActivity());
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String location = prefs.getString(getString(pref_location_key),getString(R.string.pref_location_default));
-            fetchWeatherTask.execute(location);
+            updateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private  void updateWeather(){
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
-        String location = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
-        weatherTask.execute(location);
+        SunshineSyncAdapter.syncImmediately(getActivity());
+
     }
 
 

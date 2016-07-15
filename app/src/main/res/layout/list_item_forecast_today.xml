@@ -29,7 +29,7 @@
             android:id="@+id/list_item_high_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="65sp"
+            android:textSize="60sp"
             android:fontFamily="sans-serif-light"
             android:textColor="@color/white" />
 

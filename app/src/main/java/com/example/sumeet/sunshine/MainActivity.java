@@ -15,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.sumeet.sunshine.service.sync.SunshineSyncAdapter;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "MyActivity";
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        SunshineSyncAdapter.initializeSyncAdapter(this);
     }
 
 
@@ -73,4 +76,9 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+    }
 }
